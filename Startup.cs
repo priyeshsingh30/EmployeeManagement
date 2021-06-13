@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace EmployeeManagement
 {
@@ -24,23 +25,28 @@ namespace EmployeeManagement
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env,
+                                ILogger<Startup> logger)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
 
+            // Instead of below middleware we can use UseFileServer MW ...
+            // app.UseDefaultFiles();
+            // app.UseStaticFiles();
+            FileServerOptions fileServerOptions = new FileServerOptions();
+            fileServerOptions.DefaultFilesOptions.DefaultFileNames.Clear();
+            fileServerOptions.DefaultFilesOptions.DefaultFileNames.Add("mypage.html");
+            app.UseFileServer(fileServerOptions);
+
             app.UseRouting();
 
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapGet("/", async context =>
-                {
-                    string constrDetail = _config.GetConnectionString("test").ToString();
-                    await context.Response.WriteAsync(constrDetail);
-                });
-            });
+            app.Run(async (context) => {
+                await context.Response.WriteAsync("tomtom 2... :)");
+            } );
+
         }
     }
 }
